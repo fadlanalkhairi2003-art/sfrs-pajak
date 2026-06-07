@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>SFRS — Smart Fiscal Reconciliation System</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- LOADING SCREEN -->
+  <div id="loadingScreen">
+    <div class="loader-content">
+      <div class="loader-logo">SFRS</div>
+      <div class="loader-bar"><div class="loader-fill"></div></div>
+      <p class="loader-text">Memuat sistem perpajakan...</p>
+    </div>
+  </div>
+
+  <!-- LOGIN PAGE -->
+  <div id="loginPage" class="login-wrapper d-none">
+    <div class="login-bg-shapes">
+      <div class="shape shape-1"></div>
+      <div class="shape shape-2"></div>
+      <div class="shape shape-3"></div>
+    </div>
+    <div class="login-card">
+      <div class="login-header">
+        <div class="login-logo">SFRS</div>
+        <h2 class="login-title">Smart Fiscal Reconciliation System</h2>
+        <p class="login-subtitle">Tugas Proyek Praktikum Komputer Perpajakan</p>
+      </div>
+      <div id="loginAlert" class="alert alert-danger d-none" role="alert">
+        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+        Username atau Password salah. Silakan coba lagi.
+      </div>
+      <div class="login-form">
+        <div class="form-group mb-3">
+          <label class="form-label">Username</label>
+          <div class="input-icon-wrap">
+            <i class="bi bi-person-fill input-icon"></i>
+            <input type="text" id="loginUsername" class="form-control sfrs-input" placeholder="Masukkan username">
+          </div>
+        </div>
+        <div class="form-group mb-4">
+          <label class="form-label">Password</label>
+          <div class="input-icon-wrap">
+            <i class="bi bi-lock-fill input-icon"></i>
+            <input type="password" id="loginPassword" class="form-control sfrs-input" placeholder="Masukkan password">
+            <i class="bi bi-eye-slash toggle-pw" id="togglePw"></i>
+          </div>
+        </div>
+        <button class="btn-sfrs-login w-100" onclick="doLogin()">
+          <span>Masuk ke Sistem</span>
+          <i class="bi bi-arrow-right-circle ms-2"></i>
+        </button>
+      </div>
+      <div class="login-footer">
+        <i class="bi bi-people-fill me-1"></i>by Fadlan, Nivo, Mikhael
+      </div>
+    </div>
+  </div>
+
+  <!-- MAIN APP -->
+  <div id="mainApp" class="d-none">
+
+    <!-- SIDEBAR -->
+    <aside id="sidebar" class="sfrs-sidebar">
+      <div class="sidebar-brand">
+        <span class="brand-logo">SFRS</span>
+        <span class="brand-tagline">Praktikum Komputer Perpajakan</span>
+      </div>
+      <nav class="sidebar-nav">
+        <a href="#" class="nav-item active" data-page="dashboard">
+          <i class="bi bi-speedometer2"></i><span>Dashboard</span>
+        </a>
+        <a href="#" class="nav-item" data-page="profil">
+          <i class="bi bi-building"></i><span>Profil Perusahaan</span>
+        </a>
+        <a href="#" class="nav-item" data-page="transaksi">
+          <i class="bi bi-receipt"></i><span>Input Transaksi</span>
+        </a>
+        <a href="#" class="nav-item" data-page="import">
+          <i class="bi bi-file-earmark-excel-fill"></i><span>Import Excel</span>
+        </a>
+        <a href="#" class="nav-item" data-page="rekonsiliasi">
+          <i class="bi bi-arrow-left-right"></i><span>Rekonsiliasi Fiskal</span>
+        </a>
+        <a href="#" class="nav-item" data-page="laporan">
+          <i class="bi bi-file-earmark-text-fill"></i><span>Laporan</span>
+        </a>
+        <a href="#" class="nav-item" data-page="settings">
+          <i class="bi bi-gear-fill"></i><span>Settings</span>
+        </a>
+        <a href="#" class="nav-item nav-logout" onclick="doLogout()">
+          <i class="bi bi-box-arrow-right"></i><span>Logout</span>
+        </a>
+      </nav>
+      <div class="sidebar-footer">v1.1 &copy; 2026 SFRS</div>
+    </aside>
+
+    <!-- TOPBAR -->
+    <div class="sfrs-topbar">
+      <button class="sidebar-toggle" id="sidebarToggle"><i class="bi bi-list"></i></button>
+      <div class="topbar-title" id="topbarTitle">Dashboard</div>
+      <div class="topbar-right">
+        <button class="btn-theme-toggle" id="themeToggle" title="Toggle Dark/Light Mode">
+          <i class="bi bi-moon-stars-fill"></i>
+        </button>
+        <div class="topbar-user">
+          <i class="bi bi-person-circle"></i><span id="topbarUser">Pengguna</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- CONTENT AREA -->
+    <main class="sfrs-main">
+
+      <!-- PAGE: DASHBOARD -->
+      <section id="page-dashboard" class="page-section active">
+        <div class="page-header">
+          <h3>Dashboard Perpajakan</h3>
+          <p class="page-desc">Ringkasan rekonsiliasi fiskal dan estimasi pajak badan</p>
+        </div>
+        <div class="row g-3 mb-4" id="kpiCards">
+          <div class="col-6 col-xl-2">
+            <div class="kpi-card kpi-pendapatan">
+              <div class="kpi-icon"><i class="bi bi-graph-up-arrow"></i></div>
+              <div class="kpi-label">Total Pendapatan</div>
+              <div class="kpi-value" id="kpiPendapatan">Rp 0</div>
+            </div>
+          </div>
+          <div class="col-6 col-xl-2">
+            <div class="kpi-card kpi-beban">
+              <div class="kpi-icon"><i class="bi bi-graph-down-arrow"></i></div>
+              <div class="kpi-label">Total Beban</div>
+              <div class="kpi-value" id="kpiBeban">Rp 0</div>
+            </div>
+          </div>
+          <div class="col-6 col-xl-2">
+            <div class="kpi-card kpi-korpos">
+              <div class="kpi-icon"><i class="bi bi-plus-circle-fill"></i></div>
+              <div class="kpi-label">Koreksi Positif</div>
+              <div class="kpi-value" id="kpiKorPos">Rp 0</div>
+            </div>
+          </div>
+          <div class="col-6 col-xl-2">
+            <div class="kpi-card kpi-korneg">
+              <div class="kpi-icon"><i class="bi bi-dash-circle-fill"></i></div>
+              <div class="kpi-label">Koreksi Negatif</div>
+              <div class="kpi-value" id="kpiKorNeg">Rp 0</div>
+            </div>
+          </div>
+          <div class="col-6 col-xl-2">
+            <div class="kpi-card kpi-fiskal">
+              <div class="kpi-icon"><i class="bi bi-calculator-fill"></i></div>
+              <div class="kpi-label">Laba Fiskal</div>
+              <div class="kpi-value" id="kpiLabaFiskal">Rp 0</div>
+            </div>
+          </div>
+          <div class="col-6 col-xl-2">
+            <div class="kpi-card kpi-pph">
+              <div class="kpi-icon"><i class="bi bi-bank2"></i></div>
+              <div class="kpi-label">Est. PPh Badan</div>
+              <div class="kpi-value" id="kpiPPh">Rp 0</div>
+            </div>
+          </div>
+        </div>
+        <div class="row g-3">
+          <div class="col-md-4">
+            <div class="card sfrs-card h-100">
+              <div class="card-body">
+                <h6 class="chart-title"><i class="bi bi-pie-chart-fill me-2"></i>Komposisi Beban</h6>
+                <canvas id="chartBeban" height="220"></canvas>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="card sfrs-card h-100">
+              <div class="card-body">
+                <h6 class="chart-title"><i class="bi bi-bar-chart-fill me-2"></i>Koreksi Fiskal</h6>
+                <canvas id="chartKoreksi" height="220"></canvas>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="card sfrs-card h-100">
+              <div class="card-body">
+                <h6 class="chart-title"><i class="bi bi-activity me-2"></i>Tren Laba</h6>
+                <canvas id="chartTren" height="220"></canvas>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- PAGE: PROFIL PERUSAHAAN -->
+      <section id="page-profil" class="page-section">
+        <div class="page-header">
+          <h3>Profil Perusahaan</h3>
+          <p class="page-desc">Data identitas wajib pajak badan</p>
+        </div>
+        <div class="card sfrs-card">
+          <div class="card-body">
+            <div class="row g-3">
+              <div class="col-md-6">
+                <label class="form-label">Nama Perusahaan</label>
+                <input type="text" id="profilNama" class="form-control sfrs-input" placeholder="PT. Contoh Indonesia">
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">NPWP</label>
+                <input type="text" id="profilNPWP" class="form-control sfrs-input" placeholder="00.000.000.0-000.000">
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Alamat</label>
+                <input type="text" id="profilAlamat" class="form-control sfrs-input" placeholder="Jl. Contoh No. 1, Jakarta">
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Email</label>
+                <input type="email" id="profilEmail" class="form-control sfrs-input" placeholder="pajak@perusahaan.com">
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Nomor Telepon</label>
+                <input type="text" id="profilTelp" class="form-control sfrs-input" placeholder="021-0000000">
+              </div>
+              <div class="col-md-3">
+                <label class="form-label">Tahun Pajak</label>
+                <input type="number" id="profilTahun" class="form-control sfrs-input" placeholder="2024">
+              </div>
+              <div class="col-md-3">
+                <label class="form-label">Jenis Usaha</label>
+                <select id="profilJenis" class="form-select sfrs-input">
+                  <option value="">Pilih jenis usaha</option>
+                  <option>Perdagangan</option>
+                  <option>Jasa</option>
+                  <option>Manufaktur</option>
+                  <option>Lainnya</option>
+                </select>
+              </div>
+              <div class="col-12">
+                <button class="btn-sfrs-primary" onclick="saveProfil()">
+                  <i class="bi bi-save2-fill me-2"></i>Simpan Profil
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- PAGE: INPUT TRANSAKSI -->
+      <section id="page-transaksi" class="page-section">
+        <div class="page-header">
+          <h3>Input Transaksi</h3>
+          <p class="page-desc">Catat transaksi keuangan. Akun akan otomatis terkelompok di rekonsiliasi.</p>
+        </div>
+        <div class="row g-3">
+          <div class="col-lg-4">
+            <div class="card sfrs-card">
+              <div class="card-body">
+                <h6 class="section-label mb-3"><i class="bi bi-pencil-square me-2"></i>Form Transaksi</h6>
+                <div class="row g-3">
+                  <div class="col-12">
+                    <label class="form-label">Tanggal Transaksi</label>
+                    <input type="date" id="trxTanggal" class="form-control sfrs-input">
+                  </div>
+                  <div class="col-12">
+                    <label class="form-label">Nama Akun</label>
+                    <input type="text" id="trxNama" class="form-control sfrs-input" placeholder="Contoh: Beban Sanksi Pajak">
+                  </div>
+                  <div class="col-12">
+                    <label class="form-label">Kategori</label>
+                    <select id="trxKategori" class="form-select sfrs-input">
+                      <option value="Pendapatan">Pendapatan</option>
+                      <option value="HPP">HPP / Beban Pokok</option>
+                      <option value="Beban Operasional">Beban Operasional</option>
+                      <option value="Beban Lainnya">Beban Lainnya</option>
+                      <option value="Pendapatan Lainnya">Pendapatan Lainnya</option>
+                    </select>
+                  </div>
+                  <div class="col-12">
+                    <label class="form-label">Nominal (Rp)</label>
+                    <input type="number" id="trxNominal" class="form-control sfrs-input" placeholder="0" min="0">
+                  </div>
+                  <div class="col-12">
+                    <label class="form-label">Perlakuan Fiskal</label>
+                    <select id="trxFiskal" class="form-select sfrs-input">
+                      <option value="Sesuai">Sesuai Komersial (Deductible)</option>
+                      <option value="Koreksi Positif">Koreksi Positif (Biaya tidak diakui/Penghasilan bertambah)</option>
+                      <option value="Koreksi Negatif">Koreksi Negatif (Penghasilan Final/Bukan Objek)</option>
+                    </select>
+                  </div>
+                  <div class="col-12">
+                    <label class="form-label">Keterangan</label>
+                    <input type="text" id="trxKet" class="form-control sfrs-input" placeholder="Catatan opsional">
+                  </div>
+                  <div class="col-12 d-flex gap-2">
+                    <button class="btn-sfrs-primary flex-fill" onclick="saveTrx()">
+                      <i class="bi bi-save2-fill me-2"></i>Simpan
+                    </button>
+                    <button class="btn-sfrs-secondary" onclick="resetTrx()">
+                      <i class="bi bi-arrow-counterclockwise me-1"></i>Reset
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-lg-8">
+            <div class="card sfrs-card">
+              <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                  <h6 class="section-label mb-0"><i class="bi bi-list-ul me-2"></i>Daftar Transaksi</h6>
+                  <button class="btn-sfrs-danger btn-sm" onclick="clearTrx()"><i class="bi bi-trash3-fill me-1"></i>Hapus Semua</button>
+                </div>
+                <div class="table-responsive">
+                  <table class="table sfrs-table">
+                    <thead>
+                      <tr>
+                        <th>Tgl</th>
+                        <th>Akun</th>
+                        <th>Kategori</th>
+                        <th>Nominal</th>
+                        <th>Koreksi</th>
+                        <th>Aksi</th>
+                      </tr>
+                    </thead>
+                    <tbody id="trxBody"></tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- PAGE: IMPORT EXCEL -->
+      <section id="page-import" class="page-section">
+        <div class="page-header">
+          <h3>Import Excel</h3>
+          <p class="page-desc">Upload data transaksi dari file Excel</p>
+        </div>
+        <div class="row g-3">
+          <div class="col-md-6">
+            <div class="card sfrs-card">
+              <div class="card-body text-center">
+                <div class="import-icon"><i class="bi bi-file-earmark-arrow-down"></i></div>
+                <h6 class="mt-3 fw-600">Download Template Excel</h6>
+                <p class="text-muted small">Format: Tanggal | Nama Akun | Kategori | Nominal | Keterangan</p>
+                <button class="btn-sfrs-primary" onclick="downloadTemplate()">
+                  <i class="bi bi-download me-2"></i>Download Template
+                </button>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="card sfrs-card">
+              <div class="card-body text-center">
+                <div class="import-icon"><i class="bi bi-file-earmark-arrow-up"></i></div>
+                <h6 class="mt-3 fw-600">Upload File Excel</h6>
+                <p class="text-muted small">Format .xlsx / .xls yang sesuai template</p>
+                <label class="btn-sfrs-primary d-inline-block" style="cursor:pointer">
+                  <i class="bi bi-upload me-2"></i>Pilih File Excel
+                  <input type="file" id="excelInput" accept=".xlsx,.xls" class="d-none" onchange="importExcel(event)">
+                </label>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- PAGE: REKONSILIASI FISKAL -->
+      <section id="page-rekonsiliasi" class="page-section">
+        <div class="page-header">
+          <h3>Laporan Rekonsiliasi Fiskal</h3>
+          <p class="page-desc">Perhitungan otomatis laba fiskal beserta detail akun yang terkoreksi.</p>
+        </div>
+        <div class="card sfrs-card mb-3">
+          <div class="card-body">
+            <button class="btn-sfrs-primary" onclick="hitungRekonsiliasi()">
+              <i class="bi bi-arrow-left-right me-2"></i>Tampilkan Rekonsiliasi
+            </button>
+          </div>
+        </div>
+        
+        <!-- Tabel Utama Rekonsiliasi -->
+        <div class="card sfrs-card mb-4">
+          <div class="card-body">
+            <h6 class="section-label mb-3 text-center">Kertas Kerja Rekonsiliasi Fiskal</h6>
+            <div class="table-responsive">
+              <table class="table sfrs-table" id="rekonTable">
+                <thead>
+                  <tr>
+                    <th>Nama Akun</th>
+                    <th>Saldo Komersial</th>
+                    <th>Koreksi Positif (+)</th>
+                    <th>Koreksi Negatif (−)</th>
+                    <th>Saldo Fiskal</th>
+                  </tr>
+                </thead>
+                <tbody id="rekonBody"></tbody>
+                <tfoot id="rekonFoot"></tfoot>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Breakdown Rincian Koreksi -->
+        <div class="row g-3">
+            <div class="col-md-6">
+                <div class="card sfrs-card border-warning">
+                    <div class="card-body">
+                        <h6 class="section-label mb-3 text-warning"><i class="bi bi-plus-circle-fill me-2"></i>Daftar Koreksi Positif</h6>
+                        <ul id="listKoreksiPositif" class="list-group list-group-flush bg-transparent">
+                            <!-- Injected via JS -->
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card sfrs-card border-info">
+                    <div class="card-body">
+                        <h6 class="section-label mb-3 text-info"><i class="bi bi-dash-circle-fill me-2"></i>Daftar Koreksi Negatif</h6>
+                        <ul id="listKoreksiNegatif" class="list-group list-group-flush bg-transparent">
+                            <!-- Injected via JS -->
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+      </section>
+
+      <!-- PAGE: LAPORAN -->
+      <section id="page-laporan" class="page-section">
+        <div class="page-header d-flex justify-content-between align-items-start flex-wrap gap-2">
+          <div>
+            <h3>Cetak Bukti Laporan</h3>
+            <p class="page-desc">Ringkasan final untuk SPT Tahunan Badan</p>
+          </div>
+          <div class="d-flex gap-2">
+            <button class="btn-sfrs-primary" onclick="printReport()">
+              <i class="bi bi-printer-fill me-2"></i>Cetak / PDF
+            </button>
+          </div>
+        </div>
+        <div id="laporanContent">
+          <div class="card sfrs-card mb-3">
+            <div class="card-body">
+              <div class="row g-2" id="laporanHeader">
+                <div class="col-md-6">
+                  <p class="mb-1"><strong>Perusahaan:</strong> <span id="lapNama">—</span></p>
+                  <p class="mb-1"><strong>NPWP:</strong> <span id="lapNPWP">—</span></p>
+                  <p class="mb-1"><strong>Tahun Pajak:</strong> <span id="lapTahun">—</span></p>
+                </div>
+                <div class="col-md-6 text-md-end">
+                  <p class="mb-1"><strong>Tanggal Cetak:</strong> <span id="lapTglCetak">—</span></p>
+                  <p class="mb-1"><strong>Tarif PPh:</strong> <span id="lapTarif">22%</span></p>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="card sfrs-card mb-3">
+            <div class="card-body">
+              <h6 class="section-label mb-3">Penghitungan PPh Badan Terutang</h6>
+              <table class="table sfrs-table">
+                <thead><tr><th>Keterangan</th><th class="text-end">Jumlah</th></tr></thead>
+                <tbody>
+                  <tr><td>Laba (Rugi) Komersial</td><td class="text-end" id="lapLabaKom">Rp 0</td></tr>
+                  <tr><td>Total Koreksi Positif</td><td class="text-end text-warning" id="lapKorPos">Rp 0</td></tr>
+                  <tr><td>Total Koreksi Negatif</td><td class="text-end text-info" id="lapKorNeg">Rp 0</td></tr>
+                  <tr class="fw-bold table-highlight"><td>Penghasilan Kena Pajak (Laba Fiskal)</td><td class="text-end" id="lapLabaFiskal">Rp 0</td></tr>
+                  <tr><td>Tarif Pajak Penghasilan (PPh)</td><td class="text-end" id="lapTarifPPh">22%</td></tr>
+                  <tr class="fw-bold table-highlight-pph"><td>Estimasi PPh Terutang</td><td class="text-end" id="lapPPh">Rp 0</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- PAGE: SETTINGS -->
+      <section id="page-settings" class="page-section">
+        <div class="page-header">
+          <h3>Settings</h3>
+          <p class="page-desc">Konfigurasi sistem SFRS</p>
+        </div>
+        <div class="row g-3">
+          <div class="col-md-6">
+            <div class="card sfrs-card">
+              <div class="card-body">
+                <h6 class="section-label mb-3"><i class="bi bi-percent me-2"></i>Tarif PPh Badan Dasar</h6>
+                <div class="row g-2 align-items-end">
+                  <div class="col">
+                    <label class="form-label">Tarif Pajak (%)</label>
+                    <input type="number" id="settingTarif" class="form-control sfrs-input" value="22" min="0" max="100">
+                  </div>
+                  <div class="col-auto">
+                    <button class="btn-sfrs-primary" onclick="saveTarif()">Simpan</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="col-md-6">
+            <div class="card sfrs-card">
+              <div class="card-body">
+                <h6 class="section-label mb-3"><i class="bi bi-trash3-fill me-2"></i>Reset Data</h6>
+                <p class="text-muted small">Hapus seluruh data transaksi dari sistem.</p>
+                <button class="btn-sfrs-danger" onclick="resetAllData()">
+                  <i class="bi bi-exclamation-triangle-fill me-2"></i>Reset Semua Data Transaksi
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- KARTU: PROFIL KELOMPOK -->
+          <div class="col-md-6">
+            <div class="card sfrs-card">
+              <div class="card-body">
+                <h6 class="section-label mb-3"><i class="bi bi-people-fill me-2"></i>Profil Kelompok</h6>
+                <p class="text-muted small">Informasi anggota kelompok pengembang sistem SFRS.</p>
+                <!-- Tombol untuk memanggil Modal Profil Kelompok -->
+                <button class="btn-sfrs-primary" data-bs-toggle="modal" data-bs-target="#modalKelompok">
+                  <i class="bi bi-person-vcard-fill me-2"></i>Lihat Profil Kelompok
+                </button>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- MODAL PROFIL KELOMPOK -->
+  <div class="modal fade" id="modalKelompok" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content sfrs-modal">
+        <div class="modal-header border-secondary">
+          <h5 class="modal-title fw-bold text-accent">Perkenalan Anggota Kelompok</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body p-0">
+          <ul class="list-group list-group-flush bg-transparent">
+            <li class="list-group-item bg-transparent border-secondary p-3" style="color: var(--text-primary);">
+              <div class="d-flex align-items-center">
+                <i class="bi bi-person-circle fs-3 text-accent me-3"></i>
+                <div>
+                  <strong class="d-block" style="color: var(--text-primary);">Nama : Fadlan alkhairi</strong>
+                  <span style="color: var(--text-muted); font-size: 13px;">NIM : 40011423620020</span>
+                </div>
+              </div>
+            </li>
+            <li class="list-group-item bg-transparent border-secondary p-3" style="color: var(--text-primary);">
+              <div class="d-flex align-items-center">
+                <i class="bi bi-person-circle fs-3 text-accent me-3"></i>
+                <div>
+                  <strong class="d-block" style="color: var(--text-primary);">Nama : Nivo Scheva Rafanelli</strong>
+                  <span style="color: var(--text-muted); font-size: 13px;">NIM : 40011423620035</span>
+                </div>
+              </div>
+            </li>
+            <li class="list-group-item bg-transparent border-0 p-3" style="color: var(--text-primary);">
+              <div class="d-flex align-items-center">
+                <i class="bi bi-person-circle fs-3 text-accent me-3"></i>
+                <div>
+                  <strong class="d-block" style="color: var(--text-primary);">Nama : Mikhael Roi Wijaya</strong>
+                  <span style="color: var(--text-muted); font-size: 13px;">NIM : 40011423620036</span>
+                </div>
+              </div>
+            </li>
+          </ul>
+        </div>
+        <div class="modal-footer border-secondary">
+          <button class="btn-sfrs-secondary" data-bs-dismiss="modal">Tutup</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOAST NOTIFICATION -->
+  <div class="toast-container position-fixed bottom-0 end-0 p-3">
+    <div id="sfrsToast" class="toast sfrs-toast" role="alert">
+      <div class="toast-body d-flex align-items-center gap-2">
+        <i class="bi bi-check2-circle toast-icon"></i>
+        <span id="toastMsg">Berhasil disimpan!</span>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>
